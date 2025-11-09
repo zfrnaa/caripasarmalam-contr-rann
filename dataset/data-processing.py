@@ -100,6 +100,11 @@ def parse_time_range(time_str: str) -> Optional[Dict[str, str]]:
     end_min = int(match.group(5)) if match.group(5) else 0
     end_ampm = (match.group(6) or '').lower()
     
+    # If start time has no AM/PM but end time does, infer from end time
+    # For pasar malam (night markets), if only end time has PM, assume start is also PM
+    if not start_ampm and end_ampm:
+        start_ampm = end_ampm
+    
     # Convert to 24-hour format
     if start_ampm == 'pm' and start_hour != 12:
         start_hour += 12
