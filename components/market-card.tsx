@@ -1,22 +1,16 @@
 "use client";
 
-import Link from 'next/link';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import {
-  Car,
-  Toilet as Restroom,
-  Home as Mosque,
-  CalendarDays,
-  Clock
-} from 'lucide-react';
-import type { Market } from '@/lib/markets-data';
-import { useLanguage } from '@/components/language-provider';
-import { getMarketOpenStatus } from '@/lib/utils';
-import { formatWeekday } from '@/lib/i18n';
-import { DayCode } from '@/app/enums';
-import openDirections from '@/lib/directions';
+import Link from "next/link";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Car, Toilet as Restroom, Home as Mosque, CalendarDays, Clock } from "lucide-react";
+import type { Market } from "@/lib/markets-data";
+import { useLanguage } from "@/components/language-provider";
+import { getMarketOpenStatus } from "@/lib/utils";
+import { formatWeekday } from "@/lib/i18n";
+import { DayCode } from "@/app/enums";
+import openDirections from "@/lib/directions";
 
 interface MarketCardProps {
   market: Market;
@@ -167,12 +161,7 @@ export function MarketCard({ market, userLocation, showAddress = false }: Market
           {market.location?.latitude && market.location?.longitude ? (
             <Button
               className="flex-1"
-              onClick={() =>
-                openDirections(
-                  market.location!.latitude,
-                  market.location!.longitude
-                )
-              }
+              onClick={() => openDirections(market.location!.latitude, market.location!.longitude)}
             >
               {t.showDirection}
             </Button>
