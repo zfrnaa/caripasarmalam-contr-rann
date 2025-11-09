@@ -1,26 +1,15 @@
 "use client";
 
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  ArrowLeft,
-  MapPin,
-  Clock,
-  Car,
-  Toilet as Restroom,
-  Home as Mosque,
-  ExternalLink,
-  Phone,
-  Mail,
-  Calendar,
-} from "lucide-react";
-import Link from "next/link";
-import { Market } from "@/lib/markets-data";
-import { useLanguage } from "@/components/language-provider";
-import openDirections from "@/lib/directions";
-import InteractiveMap from "@/components/interactive-map";
-import { getMarketOpenStatus } from "@/lib/utils";
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { ArrowLeft, MapPin, Clock, Car, Toilet as Restroom, Home as Mosque, ExternalLink, Phone, Mail, Calendar, Share2 } from "lucide-react"
+import Link from "next/link"
+import { Market } from "@/lib/markets-data"
+import { useLanguage } from "@/components/language-provider"
+import openDirections from "@/lib/directions"
+import InteractiveMap from "@/components/interactive-map"
+import { getMarketOpenStatus } from "@/lib/utils"
 
 interface MarketDetailClientProps {
   market: Market;
@@ -28,7 +17,7 @@ interface MarketDetailClientProps {
 
 export default function MarketDetailClient({ market }: MarketDetailClientProps) {
   // Use the shared language context so translations stay consistent across the app
-  const { t } = useLanguage();
+  const { t, language } = useLanguage()
 
   // Generate structured data for LocalBusiness
   const structuredData = {
@@ -151,8 +140,33 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
     if (areaM2 >= 10000) {
       return `${(areaM2 / 1000000).toFixed(2)} ${t.kmSquared}`;
     }
-    return `${Math.round(areaM2)} m²`;
-  };
+    return `${Math.round(areaM2)} m²`
+  }
+
+  const handleShare = async () => {
+    const url = `${process.env.NEXT_PUBLIC_SITE_URL || "https://pasarmalam.app"}/markets/${market.id}`
+    const shareData = {
+      title: market.name,
+      text: `${market.name} - ${market.district}, ${market.state}\n${market.description || `Pasar malam di ${market.district}`}`,
+      url: url
+    }
+
+    try {
+      // Check if Web Share API is supported
+      if (navigator.share) {
+        await navigator.share(shareData)
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(url)
+        alert(language === 'en' ? 'Link copied to clipboard!' : 'Pautan disalin ke papan klip!')
+      }
+    } catch (error) {
+      // User cancelled share or error occurred
+      if ((error as Error).name !== 'AbortError') {
+        console.error('Error sharing:', error)
+      }
+    }
+  }
 
   return (
     <>
@@ -461,27 +475,24 @@ export default function MarketDetailClient({ market }: MarketDetailClientProps) 
                 </Card>
               )}
 
-              {/* Actions */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>{t.actions}</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  {market.location && (
-                    <Button
-                      className="w-full"
-                      onClick={() => openDirections(market.location!.latitude, market.location!.longitude)}
-                    >
-                      <MapPin className="h-4 w-4 mr-2" />
-                      {t.getDirections}
-                    </Button>
-                  )}
-                  <Button variant="outline" className="w-full bg-transparent">
-                    <Phone className="h-4 w-4 mr-2" />
-                    {t.shareMarket}
+            {/* Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle>{t.actions}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {market.location && (
+                  <Button className="w-full" onClick={() => openDirections(market.location!.latitude, market.location!.longitude)}>
+                    <MapPin className="h-4 w-4 mr-2" />
+                    {t.getDirections}
                   </Button>
-                </CardContent>
-              </Card>
+                )}
+                <Button variant="outline" className="w-full bg-transparent" onClick={handleShare}>
+                  <Share2 className="h-4 w-4 mr-2" />
+                  {t.shareMarket}
+                </Button>
+              </CardContent>
+            </Card>
 
               {/* Nearby Markets */}
               <Card>
