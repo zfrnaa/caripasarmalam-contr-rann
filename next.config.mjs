@@ -2,9 +2,13 @@ import withPWA from "@ducanh2912/next-pwa";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  output: "standalone",
   typescript: { ignoreBuildErrors: true },
-  images: { unoptimized: true },
+  images: {unoptimized: true},
   turbopack: {},
+  experimental: {
+    outputFileTracingRoot: undefined,
+  }
 };
 
 export default withPWA({
@@ -12,6 +16,7 @@ export default withPWA({
   cacheOnFrontEndNav: true,
   aggressiveFrontEndNavCaching: true,
   reloadOnOnline: true,
+  swMinify: true,
   disable: process.env.NODE_ENV === "development",
 
   fallbacks: {
@@ -20,6 +25,8 @@ export default withPWA({
 
   workboxOptions: {
     maximumFileSizeToCacheInBytes: 5 * 1024 * 1024,
+    skipWaiting: true,
+    clientsClaim: true,
     runtimeCaching: [
       // Next.js hashed static chunks — cache forever
       {
@@ -31,34 +38,14 @@ export default withPWA({
           cacheableResponse: { statuses: [0, 200] },
         },
       },
-      // Next.js image optimization
-      {
-        urlPattern: /^https?:\/\/.*\/_next\/image\?.*/i,
-        handler: "StaleWhileRevalidate",
-        options: {
-          cacheName: "next-image-opt",
-          expiration: { maxEntries: 100, maxAgeSeconds: 60 * 60 * 24 * 30 },
-          cacheableResponse: { statuses: [0, 200] },
-        },
-      },
-      // Static files (icons, images, fonts from /public)
-      {
-        urlPattern: /\.(?:png|jpg|jpeg|svg|gif|webp|ico|woff2?|ttf|otf)$/i,
-        handler: "CacheFirst",
-        options: {
-          cacheName: "static-media",
-          expiration: { maxEntries: 80, maxAgeSeconds: 60 * 60 * 24 * 90 },
-          cacheableResponse: { statuses: [0, 200] },
-        },
-      },
       // App HTML pages — NetworkFirst (fresh when online, cached when offline)
       {
-        urlPattern: /^https?:\/\/.*\/(?:markets(?:\/[^/]+)?|about|contributors|$)/i,
+        urlPattern: ({ request }) => request.mode === 'navigate',
         handler: "NetworkFirst",
         options: {
           cacheName: "page-cache",
-          networkTimeoutSeconds: 5,
-          expiration: { maxEntries: 60, maxAgeSeconds: 60 * 60 * 24 * 7 },
+          networkTimeoutSeconds: 3,
+          expiration: { maxEntries: 50 },
           cacheableResponse: { statuses: [0, 200] },
         },
       },
@@ -68,7 +55,7 @@ export default withPWA({
         handler: "StaleWhileRevalidate",
         options: {
           cacheName: "google-fonts-stylesheets",
-          expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+          expiration: { maxEntries:20 },
         },
       },
       // Google Fonts files
