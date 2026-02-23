@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Car, Toilet as Restroom, Home as Mosque, CalendarDays, Clock } from "lucide-react";
+import { Car, Toilet as Restroom, Home as Mosque, CalendarDays, Clock, ArrowUpRightIcon } from "lucide-react";
 import type { Market } from "@/lib/markets-data";
 import { useLanguage } from "@/components/language-provider";
 import { getMarketOpenStatus } from "@/lib/utils";
@@ -80,8 +80,8 @@ export function MarketCard({ market, userLocation, showAddress = false }: Market
 
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow h-full flex flex-col">
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between mb-2">
+      <CardHeader className="gap-2">
+        <div className="flex items-start justify-between">
           <Badge variant="secondary" className="bg-amber-400 dark:bg-gray-600/30">{market.state}</Badge>
           {status.status === "open" ? (
             <Badge className="bg-green-600 text-white border-transparent">{t.openNow}</Badge>
@@ -91,44 +91,67 @@ export function MarketCard({ market, userLocation, showAddress = false }: Market
             </Badge>
           )}
         </div>
-        {distance && (
-          <div className="mb-2">
-            <Badge variant="outline" className="text-xs">
-              {distance.toFixed(1)} {t.kmFromHere}
-            </Badge>
-          </div>
-        )}
         <CardTitle className="text-lg">{market.name}</CardTitle>
-        <CardDescription>{market.district}</CardDescription>
+        {showAddress && <div className="flex gap-2 justify-between">
+          <p className="text-sm text-muted-foreground line-clamp-2">{market.address}</p>
+          {distance && (
+            <div>
+              <Badge variant="outline" className="text-xs">
+                {distance.toFixed(1)} {t.kmFromHere}
+              </Badge>
+            </div>
+          )}
+        </div>
+        }
+        {/* <CardDescription>{market.district}</CardDescription> */}
       </CardHeader>
-      <CardContent className="flex flex-col h-full">
+      <CardContent className="flex flex-col h-full gap-3">
         {/* Schedule badges */}
-        <div className="flex flex-wrap gap-2 mb-4">
-          {orderedSchedule.map((sch) => {
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-2">
+          {orderedSchedule.map((sch, index) => {
             const times = sch.times.map((s) => `${s.start}–${s.end}`).join(", ");
             const dayLabel = sch.days.map((d) => getLocalizedDayFromCode(d)).join(", ");
             const aria = `${dayLabel}, ${times}`;
+            const isLast = index === orderedSchedule.length - 1;
+            const isTotalOdd = orderedSchedule.length % 2 !== 0;
+
             return (
               <Badge
                 key={`${market.id}-${sch.days.join("-")}`}
                 variant="outline"
-                className="flex items-center gap-1 whitespace-normal break-words"
+                // className="grid items-start justify-start gap-1 whitespace-normal break-words p-2 w-full"
+                className={`grid justify-start gap-1 whitespace-normal break-words p-2 w-full ${isLast && isTotalOdd ? "col-span-2 lg:col-span-1" : ""}
+        `}
                 aria-label={aria}
               >
-                <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="whitespace-normal break-words">{dayLabel}</span>
-                <span className="text-muted-foreground">•</span>
-                <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                <span className="whitespace-normal break-words">{times}</span>
+                <div className="flex flex-grow gap-2">
+                  <CalendarDays className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span className="whitespace-normal break-words">{dayLabel}</span>
+                </div>
+                {/* <span className="text-muted-foreground">•</span> */}
+                <div className="grid grid-cols-[1rem_1fr] gap-2">
+                  <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                  <span className="whitespace-normal break-words">{times}</span>
+                </div>
               </Badge>
             );
           })}
         </div>
 
-        {showAddress && <p className="text-sm text-muted-foreground mb-4 line-clamp-2">{market.address}</p>}
+        {/* {showAddress && <div className="flex gap-2">
+          <p className="text-sm text-muted-foreground text-wrap">{market.address}</p>
+          {distance && (
+          <div>
+            <Badge variant="outline" className="text-xs">
+              {distance.toFixed(1)} {t.kmFromHere}
+            </Badge>
+          </div>
+        )}
+        </div>
+        } */}
 
         {/* Amenities */}
-        <div className="flex flex-wrap gap-3 text-sm text-muted-foreground mb-4">
+        <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
           {market.parking.available && (
             <div className="flex items-center gap-1">
               <Car className="h-4 w-4" />
@@ -169,10 +192,11 @@ export function MarketCard({ market, userLocation, showAddress = false }: Market
             <Button className="flex-1" onClick={handleShowDirections}>
               <a href={market.location.gmaps_link} target="_blank" rel="noopener noreferrer"></a>
               {t.showDirection}
+              <ArrowUpRightIcon className="h-4 w-4" />
             </Button>
           )}
           <Link href={`/markets/${market.id}`}>
-            <Button variant="outline">{t.viewDetails}</Button>
+            <Button variant="outline" className="outline border-primary/10 text-primary">{t.viewDetails}</Button>
           </Link>
         </div>
         {/* Render the mobile-only directions chooser. */}
